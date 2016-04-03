@@ -31,9 +31,17 @@ public class AuthRequest {
 	protected Deflater deflater;
 
 	public AuthRequest(AppSettings appSettings, AccountSettings accSettings){
+		this(generateId(), appSettings, accSettings);
+	}
+
+	public static String generateId(){
+		return "_"+UUID.randomUUID().toString();
+	}
+
+	public AuthRequest(String id, AppSettings appSettings, AccountSettings accSettings){
 		this.appSettings = appSettings;
 		this.accountSettings = accSettings;
-		id="_"+UUID.randomUUID().toString();
+		this.id=id;
 		SimpleDateFormat simpleDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		simpleDf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		issueInstant = simpleDf.format(new Date());

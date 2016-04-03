@@ -13,7 +13,6 @@ import java.util.TimeZone;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -35,7 +34,6 @@ public class Response {
 
 	private Element rootElement;
 	private final AccountSettings accountSettings;
-	private String response;
 	private String currentUrl;
 	private StringBuffer error;
 
@@ -70,11 +68,15 @@ public class Response {
 		this.currentUrl = currentURL;
 	}
 
+	public Response(AccountSettings accountSettings, Document document, String currentURL) throws Exception {
+		this(accountSettings);
+		this.document = document;
+		this.currentUrl = currentURL;
+	}
+
 	public void loadXmlFromBase64(String responseStr) throws Exception {
-		Base64 base64 = new Base64();
-		byte[] decodedB = base64.decode(responseStr);
-		this.response = new String(decodedB);
-		this.document = Utils.loadXML(this.response);
+		String response = Utils.decodeResponseStr(responseStr);
+		this.document = Utils.loadXML(response);
 		if(this.document == null){
 			throw new Exception("SAML Response could not be processed, invalid or empty SAML");
 		}
@@ -129,8 +131,8 @@ public class Response {
 				throw new Exception("Invalid SAML Response. Not match the saml-schema-protocol-2.0.xsd");
 			}
 
-			if (rootElement.hasAttribute("InResponseTo")) {
-				String responseInResponseTo = document.getDocumentElement().getAttribute("InResponseTo");
+			String responseInResponseTo = getInResponseTo();
+			if (responseInResponseTo != null) {
 				if(requestId.length > 0 && responseInResponseTo.compareTo(requestId[0]) != 0){
 					throw new Exception("The InResponseTo of the Response: "+ responseInResponseTo + ", does not match the ID of the AuthNRequest sent by the SP: "+ requestId[0]);
 				}
@@ -240,6 +242,14 @@ public class Response {
 			e.printStackTrace();
 			error.append(e.getMessage());
 			return false;
+		}
+	}
+
+	public String getInResponseTo(){
+		if (rootElement.hasAttribute("InResponseTo")) {
+			return document.getDocumentElement().getAttribute("InResponseTo");
+		} else {
+			return null;
 		}
 	}
 

@@ -34,6 +34,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -330,8 +331,11 @@ public class Utils {
 		}
 	}
 
-
-
+	public static String decodeResponseStr(String responseStr){
+		Base64 base64 = new Base64();
+		byte[] decodedB = base64.decode(responseStr);
+		return new String(decodedB);
+	}
 }
 
 
